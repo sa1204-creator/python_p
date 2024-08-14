@@ -64,7 +64,7 @@ def calc_net_details(ip, subnet):
 def check(Ip): 
     try:
         ipaddress.ip_address(Ip)
-        print("Valid IP address")
+        return Ip
         
     except ValueError:
         
