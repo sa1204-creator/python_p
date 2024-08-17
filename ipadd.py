@@ -48,7 +48,8 @@ def calc_net_details(ip, subnet):
     network_address = calculate_network_address(ip, subnet)
     broadcast_address = calculate_broadcast_address(ip, subnet)
     first_usable, last_usable = calculate_first_last_usable(network_address, broadcast_address)
-    usable_hosts = calculate_usable_hosts(prefixlen)
+    global usable_hosts
+    usable_hosts= calculate_usable_hosts(prefixlen)
     wildcard = calculate_wildcard(subnet)
     
     print(f"Address:               {ip}")
@@ -69,15 +70,72 @@ def check(Ip):
     except ValueError:
         
         print("Invalid IP address")
+
+def vlsm_subnetting(network_ip, prefix, hosts):
+    hosts_sorted = sorted(hosts, reverse=True)
+    subnets = []
+
+    current_ip = network_ip
+    current_prefix = prefix
+
+    for host_count in hosts_sorted:
+        required_hosts = host_count + 2  
+        new_prefix = 32 - (required_hosts - 1).bit_length()
+        subnet_mask = calculate_netmask(new_prefix)
+        
+        network_address = calculate_network_address(current_ip, subnet_mask)
+        broadcast_address = calculate_broadcast_address(current_ip, subnet_mask)
+        first_usable, last_usable = calculate_first_last_usable(network_address, broadcast_address)
+        usable_hosts = calculate_usable_hosts(new_prefix)
+        
+        subnets.append({
+            'network_address': network_address,
+            'prefix': new_prefix,
+            'subnet_mask': subnet_mask,
+            'first_usable': first_usable,
+            'last_usable': last_usable,
+            'broadcast_address': broadcast_address,
+            'usable_hosts': usable_hosts
+        })
+        
+        
+        current_ip = bin_to_ip(format(int(ip_to_bin(broadcast_address), 2) + 1, '032b'))
+
+    for idx, subnet in enumerate(subnets):
+        print(f"Subnet {idx + 1}:")
+        print(f"  Network Address: {subnet['network_address']}/{subnet['prefix']}")
+        print(f"  Subnet Mask:     {subnet['subnet_mask']}")
+        print(f"  First IP:        {subnet['first_usable']}")
+        print(f"  Last IP:         {subnet['last_usable']}")
+        print(f"  Broadcast:       {subnet['broadcast_address']}")
+        print(f"  Usable Hosts:    {subnet['usable_hosts']}")
+       
+    
+
+
+    
  
+    
+
+
 
     
      
 def main():
     ip = input("Enter the IP address: ")
     check(ip)
-    subnet = input("Enter the subnet mask or prefix (e.g., 255.255.255.0 or 24): ")
-    calc_net_details(ip, subnet)
+    if ip:
+        prefix = int(input("Enter the initial prefix (e.g., 24): "))
+        num_subnets = int(input("Enter the number of subnets: "))
+        hosts = []
+        
+        for i in range(num_subnets):
+            host_count = int(input(f"Enter the number of hosts for subnet {i + 1}: "))
+            hosts.append(host_count)
+        
+        print("\nVLSM Subnetting:")
+        vlsm_subnetting(ip, prefix, hosts)
+
 
 if __name__=="__main__":
     main()
