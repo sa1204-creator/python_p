@@ -112,14 +112,6 @@ def vlsm_subnetting(network_ip, prefix, hosts):
        
     
 
-
-    
- 
-    
-
-
-
-    
      
 def main():
     ip = input("Enter the IP address: ")
